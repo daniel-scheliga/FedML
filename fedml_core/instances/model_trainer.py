@@ -31,8 +31,3 @@ class ModelTrainer(ABC):
     @abstractmethod
     def test(self, test_data, device, args=None):
         pass
-
-    @abstractmethod
-    def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
-        pass
-
