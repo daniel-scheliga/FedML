@@ -43,7 +43,7 @@ class Client:
         metrics = self.model_trainer.train(self.trn_data)
         weights = self.model_trainer.get_model_params()
         for metric, value in metrics.items():
-            self.local_history[metric+'_trn_local_tune'].extend(value)
+            self.local_history[metric+'_trn_local'].extend(value)
         self.log_fn(f'# Client {self.client_name} training (END) #')
         return weights, metrics
 

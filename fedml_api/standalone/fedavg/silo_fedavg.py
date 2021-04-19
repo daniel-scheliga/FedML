@@ -70,10 +70,10 @@ class SiloFedAvg(object):
             self.log_fn('# Globally set new model parameters for testing #')
 
             if global_epoch % validation_frequency == 0:
-                global_trn_metrics = self.test('trn', global_epoch)
+                #global_trn_metrics = self.test('trn', global_epoch)
+                #for metric, value in global_trn_metrics.items():
+                #    self.history['trn_'+metric].append(value)
                 global_val_metrics = self.test('val', global_epoch)
-                for metric, value in global_trn_metrics.items():
-                    self.history['trn_'+metric].append(value)
                 for metric, value in global_val_metrics.items():
                     self.history['val_'+metric].append(value)
 
@@ -102,6 +102,7 @@ class SiloFedAvg(object):
         client_metrics = defaultdict(list)
         client_samples = []
         for client_id, client in self.clients.items():
+            client.model_trainer.set_model_params(self.model_trainer.get_model_params())
             local_metrics = client.test(split)
             for metric, value in local_metrics.items():
                 client_metrics[metric].append(value)
