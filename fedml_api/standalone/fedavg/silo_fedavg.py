@@ -23,10 +23,9 @@ class SiloFedAvg(object):
             log_fn: a logging function
             early_stopper: an EarlyStopping class that can be called on a metric and provides attributes: best_score, improved, stop
             history_save_fn: a function that gets self.history (dict) and a identifying string as an argument and saves it based on the function definition
-
         """
         self.log_fn = log_fn
-        self.log_fn('### Initializing FedAvg environment (START) ###')
+        self.log_fn(f'### Initializing {self.__class__.__name__} environment (START) ###')
 
         local_trn_data_dict, local_tst_data_dict, local_val_data_dict = dataset
 
@@ -34,13 +33,14 @@ class SiloFedAvg(object):
 
         self.clients = {}
         self._setup_clients(local_trn_data_dict, local_tst_data_dict, local_val_data_dict, model_trainer)
+        self.client_samples = {client_id: {'train': client.get_sample_number('train'), 'test': client.get_sample_number('test'), 'val':client.get_sample_number('val')} for client_id, client in self.clients.items()}
 
         self.early_stopper = early_stopper
 
         self.history = defaultdict(list)
         self.history_save_fn = history_save_fn
 
-        self.log_fn('### Initializing FedAvg environment (END) ###')
+        self.log_fn(f'### Initializing {self.__class__.__name__} environment (END) ###')
 
     def _setup_clients(self, local_trn_data_dict, local_tst_data_dict, local_val_data_dict, model_trainer):
         self.log_fn('# Setting up Clients (START) #')
@@ -52,7 +52,7 @@ class SiloFedAvg(object):
         self.log_fn('# Setting up Clients (END) #')
 
     def train(self, communication_rounds, validation_frequency):
-        self.log_fn('### FedAvg Training (START) ###')
+        self.log_fn(f'### {self.__class__.__name__} Training (START) ###')
 
         w_global = self.model_trainer.get_model_params()
         for global_epoch in range(communication_rounds):
@@ -94,11 +94,11 @@ class SiloFedAvg(object):
             if self.model_trainer.debug:
                 break
 
-        self.log_fn('### FedAvg Training (END) ###')
+        self.log_fn(f'### {self.__class__.__name__} Training (END) ###')
         return self.history, self._get_local_histories()
 
     def test(self, split, round=-1, return_locals=False):
-        self.log_fn('### FedAvg Testing Model (START) ###')
+        self.log_fn(f'### {self.__class__.__name__} Testing Model (START) ###')
         client_metrics = defaultdict(list)
         client_samples = []
         for client_id, client in self.clients.items():
@@ -106,7 +106,7 @@ class SiloFedAvg(object):
             local_metrics = client.test(split)
             for metric, value in local_metrics.items():
                 client_metrics[metric].append(value)
-            client_samples.append(client.get_sample_number(split))
+            client_samples.append(self.client_samples[client_id][split])
 
         acc_metrics = {}
         for metric, values in client_metrics.items():
@@ -119,9 +119,9 @@ class SiloFedAvg(object):
         if round >= 0:
             self.log_fn(f'# Testing the current global model in communication round {round} on {split} data: {ms} #')
         else:
-            self.log_fn(f'# Evaluation of FedAvg global model on {split} data: {ms} #')
+            self.log_fn(f'# Evaluation of {self.__class__.__name__} global model on {split} data: {ms} #')
 
-        self.log_fn('### FedAvg Testing Model (END) ###')
+        self.log_fn(f'### {self.__class__.__name__} Testing Model (END) ###')
         if return_locals:
             client_metrics['IDs'] = list(self.clients.keys())
             return acc_metrics, client_metrics
