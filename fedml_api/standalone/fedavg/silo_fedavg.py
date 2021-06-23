@@ -154,4 +154,4 @@ class SiloFedAvg(object):
             self.history_save_fn(self.history, 'GLOBAL')
             local_histories = self._get_local_histories()
             for client_id, history in local_histories.items():
-                self.history_save_fn(history, 'LOCAL_'+client_id)
+                self.history_save_fn(history, 'LOCAL_'+str(client_id))
