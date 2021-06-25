@@ -54,9 +54,9 @@ class SiloFedAvg(object):
     def train(self, communication_rounds, validation_frequency):
         self.log_fn(f'### {self.__class__.__name__} Training (START) ###')
 
-        w_global = self.model_trainer.get_model_params()
         for global_epoch in range(communication_rounds):
             self.log_fn(f'# Communication round {global_epoch + 1} #')
+            w_global = self.model_trainer.get_model_params()
 
             local_weights = []
             for client_id, client in self.clients.items():
@@ -65,8 +65,9 @@ class SiloFedAvg(object):
                 local_weights.append((client.get_sample_number('train'), copy.deepcopy(w)))
 
             # update global weights
-            w_global = self._aggregate(local_weights)
             self.model_trainer.set_model_params(w_global)
+            self._aggregate(local_weights)
+            
             self.log_fn('# Globally set new model parameters for testing #')
 
             if global_epoch % validation_frequency == 0:
@@ -144,7 +145,8 @@ class SiloFedAvg(object):
                     averaged_params[k] = local_model_params[k] * w
                 else:
                     averaged_params[k] += local_model_params[k] * w
-        return averaged_params
+        
+        self.model_trainer.set_model_params(averaged_params)
 
     def _get_local_histories(self):
         return {client_id: client.local_history for client_id, client in self.clients.items()}

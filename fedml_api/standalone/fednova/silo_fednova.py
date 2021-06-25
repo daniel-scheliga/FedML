@@ -23,10 +23,9 @@ class SiloFedNova(SiloFedAvg):
             history_save_fn: a function that gets self.history (dict) and a identifying string as an argument and saves it based on the function definition
         """
         super().__init__(dataset, model_trainer, log_fn, early_stopper, history_save_fn)
-        self.log_fn(f'### Initializing {self.__class__.__name__} environment (START) ###')
         self.total_trainsample_num = sum([sample_dict['train'] for sample_dict in self.client_samples.values()])
 
-        self.log_fn(f'### Initializing {self.__class__.__name__} environment (END) ###')
+        self.log_fn(f'### Further initializations for {self.__class__.__name__} environment (END) ###')
 
     def train(self, communication_rounds, validation_frequency):
         """Pretty similar to SiloFedAvg Only adjusting the aggregation and optimizer
@@ -49,8 +48,8 @@ class SiloFedNova(SiloFedAvg):
                 tau_effs.append(client.model_trainer.tau_eff)
 
             # update global weights
-            w_global = self._aggregate(initial_parameters, norm_grads, tau_effs)
-            self.model_trainer.set_model_params(w_global)
+            self._aggregate(initial_parameters, norm_grads, tau_effs)
+            
             self.log_fn('# Globally set new model parameters for testing #')
 
             if global_epoch % validation_frequency == 0:
@@ -107,4 +106,4 @@ class SiloFedNova(SiloFedAvg):
             else:
                 params[k].sub_(cum_grad[k])
 
-        return params
+        self.model_trainer.set_model_params(params)
