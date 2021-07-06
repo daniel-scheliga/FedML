@@ -4,6 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 import torch
+import wandb
 
 from FedML.fedml_core.instances.client import Client
 
@@ -122,6 +123,8 @@ class SiloFedAvg(object):
         else:
             self.log_fn(f'# Evaluation of {self.__class__.__name__} global model on {split} data: {ms} #')
 
+        if self.model_trainer.args.wandb:
+            wandb.log({'GLOBAL': acc_metrics})
         self.log_fn(f'### {self.__class__.__name__} Testing Model (END) ###')
         if return_locals:
             client_metrics['IDs'] = list(self.clients.keys())
