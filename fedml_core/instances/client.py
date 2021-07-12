@@ -57,7 +57,7 @@ class Client:
             self.local_history[metric+'_trn_local'].extend(value)
         self.log_fn(f'# Client {self.client_name} training (END) #')
         if self.model_trainer.args.wandb:
-            wandb.log({self.client_name: metrics})
+            wandb.log({'Client.'+str(self.client_name): metrics})
         return weights, metrics
 
     def test(self, split='tst'):
@@ -78,5 +78,5 @@ class Client:
         for metric, value in metrics.items():
             self.local_history[metric+f'_{split}'].append(value)
         if self.model_trainer.args.wandb:
-            wandb.log({self.client_name: metrics})
+            wandb.log({'Client.'+str(self.client_name): metrics})
         return metrics
